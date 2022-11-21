@@ -1,13 +1,16 @@
 import dbConnection from "./config/dbConnection";
 import express from "express";
+import taskRouter from "./routes/task.route";
+import bodyParser from "body-parser";
 
 const app = express();
 
-app.use((req, res, next) => {
-  res.json({
-    messaage: "api working",
-  });
-});
+// middleware
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// routes
+app.use("/task", taskRouter);
 
 function startServer() {
   dbConnection(process.env.MONGODB_URI as string, () => {
