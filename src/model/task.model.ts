@@ -1,7 +1,7 @@
 import { model, Schema } from "mongoose";
-import taskInterface from "utils/interface/task.interface";
+import TaskInterface from "utils/interface/task.interface";
 
-const TaskSchema = new Schema(
+const TaskSchema = new Schema<TaskInterface>(
   {
     task_name: {
       type: String,
@@ -18,4 +18,4 @@ const TaskSchema = new Schema(
   { timestamps: true }
 );
 
-export default model<taskInterface>("Task", TaskSchema);
+export default model<TaskInterface>("Task", TaskSchema);

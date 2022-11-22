@@ -22,9 +22,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const task_validation_1 = __importDefault(require("../validation/task.validation"));
 const taskController = __importStar(require("../controller/task.controller"));
 const router = (0, express_1.Router)();
-router.post("/", taskController.createPost);
+router.post("/", task_validation_1.default, taskController.createPost);
 exports.default = router;

@@ -14,9 +14,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createPost = void 0;
 const task_model_1 = __importDefault(require("../model/task.model"));
+const express_validator_1 = require("express-validator");
+const validation_error_handler_1 = __importDefault(require("../utils/handler/validation.error.handler"));
+const HttpErrorHandler_1 = __importDefault(require("../utils/handler/HttpErrorHandler"));
 const createPost = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log("req.body", req.body);
+        const validationError = (0, validation_error_handler_1.default)((0, express_validator_1.validationResult)(req).array());
+        if (validationError.length > 0) {
+            throw new HttpErrorHandler_1.default(400, "Validation Error", validationError);
+        }
         const { task_name, task_description, task_priority, task_dealine } = req.body;
         const task = yield task_model_1.default.create({
             task_name,
@@ -30,9 +36,7 @@ const createPost = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         });
     }
     catch (error) {
-        res.status(400).json({
-            error: error.message,
-        });
+        next(error);
     }
 });
 exports.createPost = createPost;
