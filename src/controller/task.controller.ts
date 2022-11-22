@@ -1,12 +1,20 @@
 import { Request, Response, NextFunction } from "express";
 import TaskModel from "../model/task.model";
+import { validationResult } from "express-validator";
+import getValidationReport from "../utils/handler/validation.error.handler";
+import HttpException from "../utils/handler/HttpErrorHandler";
+
 export const createPost = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    console.log("req.body", req.body);
+    const validationError = getValidationReport(validationResult(req).array());
+    if (validationError.length > 0) {
+      throw new HttpException(400, "Validation Error", validationError);
+    }
+
     const { task_name, task_description, task_priority, task_dealine } =
       req.body;
 
@@ -22,9 +30,7 @@ export const createPost = async (
       task,
     });
   } catch (error: any) {
-    res.status(400).json({
-      error: error.message,
-    });
+    next(error);
   }
 };
 
