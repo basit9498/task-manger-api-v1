@@ -1,8 +1,10 @@
 import dbConnection from "./config/dbConnection";
 import express from "express";
-import taskRouter from "./routes/task.route";
 import bodyParser from "body-parser";
 import errorMiddleware from "./middleware/error.middleware";
+
+import taskRouter from "./routes/task.route";
+import userRouter from "./routes/user.route";
 
 const app = express();
 
@@ -12,6 +14,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // routes
 app.use("/task", taskRouter);
+app.use("/user", userRouter);
 
 // Error Handler Middleware
 app.use(errorMiddleware);
