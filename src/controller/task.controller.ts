@@ -3,12 +3,13 @@ import TaskModel from "../model/task.model";
 import { validationResult } from "express-validator";
 import getValidationReport from "../utils/handler/validation.error.handler";
 import HttpException from "../utils/handler/HttpErrorHandler";
+import { createPostService } from "../service/task.service";
 
 export const createPost = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<Response | void> => {
   try {
     const validationError = getValidationReport(validationResult(req).array());
     if (validationError.length > 0) {
@@ -18,12 +19,12 @@ export const createPost = async (
     const { task_name, task_description, task_priority, task_dealine } =
       req.body;
 
-    const task = await TaskModel.create({
+    const task = await createPostService(
       task_name,
       task_description,
       task_priority,
-      task_dealine,
-    });
+      task_dealine
+    );
 
     res.status(201).json({
       message: "add new task successfully ",
