@@ -6,8 +6,7 @@ const errorMiddleware: ErrorRequestHandler = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
-  console.log("error middleware calling");
+): void => {
   res.status(err.status | 404).json({
     error: err.message,
     detail: err.error_detail,
