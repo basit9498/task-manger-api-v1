@@ -5,6 +5,7 @@ import errorMiddleware from "./middleware/error.middleware";
 
 import taskRouter from "./routes/task.route";
 import userRouter from "./routes/user.route";
+import authRoute from "./routes/auth.route";
 
 const app = express();
 
@@ -13,8 +14,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // routes
-app.use("/task", taskRouter);
+app.use("/auth", authRoute);
 app.use("/user", userRouter);
+app.use("/task", taskRouter);
 
 // Error Handler Middleware
 app.use(errorMiddleware);

@@ -12,22 +12,43 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkExistEmail = void 0;
+exports.registerUserService = exports.checkExistEmailService = void 0;
 const HttpErrorHandler_1 = __importDefault(require("../utils/handler/HttpErrorHandler"));
 const user_model_1 = __importDefault(require("../model/user.model"));
-const checkExistEmail = (email) => __awaiter(void 0, void 0, void 0, function* () {
+// Checking Existing Email
+const checkExistEmailService = (email) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield user_model_1.default.findOne({ email: email });
         if (user) {
-            return Promise.reject("Email is already exist");
+            throw new Error("Email is already exist");
         }
-        return Promise.resolve();
+        return true;
     }
     catch (error) {
-        throw new HttpErrorHandler_1.default(404, "Email Checking", error.message);
+        throw new HttpErrorHandler_1.default(404, error.message, []);
     }
 });
-exports.checkExistEmail = checkExistEmail;
+exports.checkExistEmailService = checkExistEmailService;
+// Add New User
+const registerUserService = (name, email, user_name, password, role) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const user = yield user_model_1.default.create({
+            name,
+            email,
+            user_name,
+            password,
+            role,
+        });
+        return user;
+    }
+    catch (error) {
+        throw new HttpErrorHandler_1.default(400, "Unable to create new User !", [
+            error === null || error === void 0 ? void 0 : error.message,
+        ]);
+    }
+});
+exports.registerUserService = registerUserService;
 exports.default = {
-    checkExistEmail: exports.checkExistEmail,
+    checkExistEmailService: exports.checkExistEmailService,
+    registerUserService: exports.registerUserService,
 };
