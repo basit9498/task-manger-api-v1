@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.userValidationLogout = exports.userValidationLogin = exports.userValidation = void 0;
 const express_validator_1 = require("express-validator");
 const auth_service_1 = require("../service/auth.service");
 const role_value = ["ADMIN", "PROJECT_MANAGER", "DEVELOPER"];
-const userValidation = (0, express_validator_1.checkSchema)({
+exports.userValidation = (0, express_validator_1.checkSchema)({
     name: {
         notEmpty: {
             bail: true,
@@ -85,4 +86,47 @@ const userValidation = (0, express_validator_1.checkSchema)({
         },
     },
 });
-exports.default = userValidation;
+exports.userValidationLogin = (0, express_validator_1.checkSchema)({
+    email: {
+        notEmpty: {
+            bail: true,
+            errorMessage: "Email Required !",
+        },
+        isEmail: {
+            bail: true,
+            errorMessage: "Invalid Email !",
+        },
+        trim: true,
+    },
+    password: {
+        notEmpty: {
+            bail: true,
+            errorMessage: "Password Required !",
+        },
+        trim: true,
+    },
+});
+exports.userValidationLogout = (0, express_validator_1.checkSchema)({
+    token: {
+        notEmpty: {
+            errorMessage: "Please provide login token !",
+            bail: true,
+        },
+        custom: {
+            options: (value) => {
+                return (0, auth_service_1.logoutAuthVerifyTokenService)(value)
+                    .then((verify) => {
+                    console.log("verify", verify);
+                    if (verify) {
+                        return Promise.resolve();
+                    }
+                    return Promise.reject();
+                })
+                    .catch((error) => {
+                    return Promise.reject(error.message);
+                });
+            },
+        },
+    },
+});
+exports.default = { userValidation: exports.userValidation, userValidationLogin: exports.userValidationLogin, userValidationLogout: exports.userValidationLogout };

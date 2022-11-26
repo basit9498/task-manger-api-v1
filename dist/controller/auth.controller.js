@@ -36,6 +36,53 @@ const authRegister = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.authRegister = authRegister;
+// login
+const authLogin = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const error_detail = (0, validation_error_handler_1.default)((0, express_validator_1.validationResult)(req).array());
+        if ((error_detail === null || error_detail === void 0 ? void 0 : error_detail.length) > 0) {
+            throw new HttpErrorHandler_1.default(400, "User Login Validation Error", error_detail);
+        }
+        const { email, password } = req.body;
+        const user_data = yield (0, auth_service_1.loginUserService)(email, password);
+        const user_detail = user_data;
+        const user_filter = {
+            _id: user_detail.user._id,
+            name: user_detail.user.name,
+            role: user_detail.user.role,
+            user_name: user_detail.user.user_name,
+        };
+        res.status(200).json({
+            message: "Login Successfull",
+            user: user_filter,
+            tokon: user_detail.token,
+            refresh_token: user_detail.refreshToken,
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+// Logout
+const authLogout = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Validation
+        const error_detail = (0, validation_error_handler_1.default)((0, express_validator_1.validationResult)(req).array());
+        if ((error_detail === null || error_detail === void 0 ? void 0 : error_detail.length) > 0) {
+            throw new HttpErrorHandler_1.default(400, "User Logout Validation Error", error_detail);
+        }
+        // Remove the token form DataBase
+        yield (0, auth_service_1.logoutAuthUpdateTokenService)(req.body.token);
+        res.json({
+            message: "User Logout Successfully",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
 exports.default = {
     authRegister: exports.authRegister,
+    authLogin,
+    authLogout,
 };
