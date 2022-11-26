@@ -94,7 +94,6 @@ const logoutAuthVerifyTokenService = (token) => __awaiter(void 0, void 0, void 0
         const user_verify_token = yield user_model_1.default.findOne({
             login_token: { $elemMatch: { "log_token.token": token } },
         });
-        // console.log("user_token", user_verify_token);
         if (user_verify_token) {
             return true;
         }

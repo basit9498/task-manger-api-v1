@@ -116,7 +116,6 @@ exports.userValidationLogout = (0, express_validator_1.checkSchema)({
             options: (value) => {
                 return (0, auth_service_1.logoutAuthVerifyTokenService)(value)
                     .then((verify) => {
-                    console.log("verify", verify);
                     if (verify) {
                         return Promise.resolve();
                     }

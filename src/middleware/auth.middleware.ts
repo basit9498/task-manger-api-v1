@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response } from "express";
+import { logoutAuthVerifyTokenService } from "../service/auth.service";
 import jwtVerifyToken from "../helper/verifyToken";
 import HttpException from "../utils/handler/HttpErrorHandler";
 
-const isAuth = (
+const isAuth = async (
   req: Request,
   res: Response,
   next: NextFunction
-): void | NextFunction => {
+): Promise<void | NextFunction> => {
   try {
     const getAuthHeader = req.get("Authorization");
 
@@ -23,6 +24,9 @@ const isAuth = (
     }
 
     const bearer_token = getAuthHeader.split(" ")[1];
+    // check the token in database is user logout or not
+    await logoutAuthVerifyTokenService(bearer_token);
+
     // Verfity the Token
     const token_detail = jwtVerifyToken(bearer_token);
     //
