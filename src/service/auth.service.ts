@@ -97,9 +97,6 @@ export const logoutAuthVerifyTokenService = async (
     const user_verify_token = await UserModel.findOne({
       login_token: { $elemMatch: { "log_token.token": token } },
     });
-
-    // console.log("user_token", user_verify_token);
-
     if (user_verify_token) {
       return true;
     }

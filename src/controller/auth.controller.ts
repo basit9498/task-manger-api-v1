@@ -7,7 +7,6 @@ import {
   logoutAuthUpdateTokenService,
   registerUserService,
 } from "../service/auth.service";
-import { UserInterface } from "../utils/interface/user.interface";
 import LoginServiceInterface from "../utils/interface/login.service.interface";
 
 export const authRegister = async (

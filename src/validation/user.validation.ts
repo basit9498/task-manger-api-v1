@@ -119,7 +119,6 @@ export const userValidationLogout = checkSchema({
       options: (value) => {
         return logoutAuthVerifyTokenService(value)
           .then((verify) => {
-            console.log("verify", verify);
             if (verify) {
               return Promise.resolve();
             }
