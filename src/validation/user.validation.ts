@@ -1,8 +1,12 @@
 import { checkSchema } from "express-validator";
-import { checkExistEmailService } from "../service/auth.service";
+import {
+  checkExistEmailService,
+  logoutAuthVerifyTokenService,
+} from "../service/auth.service";
 
 const role_value: string[] = ["ADMIN", "PROJECT_MANAGER", "DEVELOPER"];
-const userValidation = checkSchema({
+
+export const userValidation = checkSchema({
   name: {
     notEmpty: {
       bail: true,
@@ -84,4 +88,49 @@ const userValidation = checkSchema({
   },
 });
 
-export default userValidation;
+export const userValidationLogin = checkSchema({
+  email: {
+    notEmpty: {
+      bail: true,
+      errorMessage: "Email Required !",
+    },
+    isEmail: {
+      bail: true,
+      errorMessage: "Invalid Email !",
+    },
+    trim: true,
+  },
+  password: {
+    notEmpty: {
+      bail: true,
+      errorMessage: "Password Required !",
+    },
+    trim: true,
+  },
+});
+
+export const userValidationLogout = checkSchema({
+  token: {
+    notEmpty: {
+      errorMessage: "Please provide login token !",
+      bail: true,
+    },
+    custom: {
+      options: (value) => {
+        return logoutAuthVerifyTokenService(value)
+          .then((verify) => {
+            console.log("verify", verify);
+            if (verify) {
+              return Promise.resolve();
+            }
+            return Promise.reject();
+          })
+          .catch((error: any) => {
+            return Promise.reject(error.message);
+          });
+      },
+    },
+  },
+});
+
+export default { userValidation, userValidationLogin, userValidationLogout };
