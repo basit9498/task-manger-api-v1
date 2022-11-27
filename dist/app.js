@@ -10,6 +10,7 @@ const error_middleware_1 = __importDefault(require("./middleware/error.middlewar
 const task_route_1 = __importDefault(require("./routes/task.route"));
 const user_route_1 = __importDefault(require("./routes/user.route"));
 const auth_route_1 = __importDefault(require("./routes/auth.route"));
+const project_route_1 = __importDefault(require("./routes/project.route"));
 const app = (0, express_1.default)();
 // middleware
 app.use(body_parser_1.default.json());
@@ -17,6 +18,7 @@ app.use(body_parser_1.default.urlencoded({ extended: true }));
 // routes
 app.use("/auth", auth_route_1.default);
 app.use("/user", user_route_1.default);
+app.use("/project", project_route_1.default);
 app.use("/task", task_route_1.default);
 // Error Handler Middleware
 app.use(error_middleware_1.default);

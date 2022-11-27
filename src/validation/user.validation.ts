@@ -2,6 +2,7 @@ import { checkSchema } from "express-validator";
 import {
   checkExistEmailService,
   logoutAuthVerifyTokenService,
+  verifyRefreshTokenService,
 } from "../service/auth.service";
 
 const role_value: string[] = ["ADMIN", "PROJECT_MANAGER", "DEVELOPER"];
@@ -119,7 +120,6 @@ export const userValidationLogout = checkSchema({
       options: (value) => {
         return logoutAuthVerifyTokenService(value)
           .then((verify) => {
-            console.log("verify", verify);
             if (verify) {
               return Promise.resolve();
             }
@@ -133,4 +133,32 @@ export const userValidationLogout = checkSchema({
   },
 });
 
-export default { userValidation, userValidationLogin, userValidationLogout };
+export const userValidationRefreshToken = checkSchema({
+  refresh_token: {
+    notEmpty: {
+      errorMessage: "Please provide refresh token !",
+      bail: true,
+    },
+    custom: {
+      options: (value) => {
+        return verifyRefreshTokenService(value)
+          .then((verify) => {
+            if (verify) {
+              return Promise.resolve();
+            }
+            return Promise.reject();
+          })
+          .catch((error: any) => {
+            return Promise.reject(error.message);
+          });
+      },
+    },
+  },
+});
+
+export default {
+  userValidation,
+  userValidationLogin,
+  userValidationLogout,
+  userValidationRefreshToken,
+};

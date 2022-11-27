@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logoutAuthUpdateTokenService = exports.logoutAuthVerifyTokenService = exports.loginUserService = exports.registerUserService = exports.checkExistEmailService = void 0;
+exports.authRefreshTokenGenrateService = exports.autoLogoutAuthTokenExpiredService = exports.verifyRefreshTokenService = exports.logoutAuthUpdateTokenService = exports.logoutAuthVerifyTokenService = exports.loginUserService = exports.registerUserService = exports.checkExistEmailService = void 0;
 const HttpErrorHandler_1 = __importDefault(require("../utils/handler/HttpErrorHandler"));
 const user_model_1 = __importDefault(require("../model/user.model"));
 const createToken_1 = require("../helper/createToken");
@@ -94,7 +94,6 @@ const logoutAuthVerifyTokenService = (token) => __awaiter(void 0, void 0, void 0
         const user_verify_token = yield user_model_1.default.findOne({
             login_token: { $elemMatch: { "log_token.token": token } },
         });
-        // console.log("user_token", user_verify_token);
         if (user_verify_token) {
             return true;
         }
@@ -117,10 +116,71 @@ const logoutAuthUpdateTokenService = (token) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.logoutAuthUpdateTokenService = logoutAuthUpdateTokenService;
+// Logout Verify Refresh Token Valaidation
+const verifyRefreshTokenService = (refresh_token) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const user_verify_token = yield user_model_1.default.findOne({
+            login_token: { $elemMatch: { "refresh_token.token": refresh_token } },
+        });
+        if (user_verify_token) {
+            return true;
+        }
+        throw new Error("Invalid Refresh Token !");
+    }
+    catch (error) {
+        throw new Error(error.message);
+    }
+});
+exports.verifyRefreshTokenService = verifyRefreshTokenService;
+// Auto logout after refresh token as expired
+const autoLogoutAuthTokenExpiredService = (token) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield user_model_1.default.updateOne({ "login_token.refresh_token.token": token }, {
+            $pull: { login_token: { "refresh_token.token": token } },
+        });
+    }
+    catch (error) {
+        throw new Error(error.message);
+    }
+});
+exports.autoLogoutAuthTokenExpiredService = autoLogoutAuthTokenExpiredService;
+const authRefreshTokenGenrateService = (user_id, refresh_token) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const user = yield user_model_1.default.findById(user_id);
+        if (!user) {
+            throw new Error("User Data not Found");
+        }
+        const token = (0, createToken_1.createToken)({
+            _id: user._id,
+            name: user.name,
+            user_name: user.user_name,
+            email: user.email,
+            role: user.role,
+        });
+        const upaet = yield user_model_1.default.updateOne({ "login_token.refresh_token.token": refresh_token }, {
+            $set: {
+                "login_token.$[elem].log_token.token": token,
+                // "login_token.$[elem].log_token.expire_date":
+                //   "For Update",
+            },
+        }, {
+            arrayFilters: [{ "elem.refresh_token.token": { $eq: refresh_token } }],
+        });
+        console.log("upaet", upaet);
+        return token;
+    }
+    catch (error) {
+        throw new Error(error.message);
+    }
+});
+exports.authRefreshTokenGenrateService = authRefreshTokenGenrateService;
 exports.default = {
     checkExistEmailService: exports.checkExistEmailService,
     registerUserService: exports.registerUserService,
     loginUserService: exports.loginUserService,
     logoutAuthVerifyTokenService: exports.logoutAuthVerifyTokenService,
     logoutAuthUpdateTokenService: exports.logoutAuthUpdateTokenService,
+    verifyRefreshTokenService: exports.verifyRefreshTokenService,
+    autoLogoutAuthTokenExpiredService: exports.autoLogoutAuthTokenExpiredService,
+    authRefreshTokenGenrateService: exports.authRefreshTokenGenrateService,
 };

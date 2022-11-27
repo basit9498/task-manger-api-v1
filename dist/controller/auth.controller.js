@@ -17,6 +17,8 @@ const validation_error_handler_1 = __importDefault(require("../utils/handler/val
 const express_validator_1 = require("express-validator");
 const HttpErrorHandler_1 = __importDefault(require("../utils/handler/HttpErrorHandler"));
 const auth_service_1 = require("../service/auth.service");
+const verifyToken_1 = require("../helper/verifyToken");
+const isTokenExpired_1 = __importDefault(require("../helper/isTokenExpired"));
 const authRegister = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const error_detail = (0, validation_error_handler_1.default)((0, express_validator_1.validationResult)(req).array());
@@ -81,8 +83,39 @@ const authLogout = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         next(error);
     }
 });
+// Refresh Token
+const authRefreshToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Validation
+        const error_detail = (0, validation_error_handler_1.default)((0, express_validator_1.validationResult)(req).array());
+        if ((error_detail === null || error_detail === void 0 ? void 0 : error_detail.length) > 0) {
+            throw new HttpErrorHandler_1.default(400, "Refrest Token Validation Error", error_detail);
+        }
+        const { refresh_token } = req.body;
+        const token_check = (0, isTokenExpired_1.default)(refresh_token);
+        if (token_check) {
+            // Remove this token from Data base like automayically logout
+            (0, auth_service_1.autoLogoutAuthTokenExpiredService)(refresh_token);
+            throw new HttpErrorHandler_1.default(400, "Refrest Token Expired Error", [
+                "This token has been expired please login again !",
+            ]);
+        }
+        const token_detail = (0, verifyToken_1.jwtVerifyRefreshToken)(refresh_token);
+        const convert_token_ts = token_detail;
+        // update new token
+        const new_token = yield (0, auth_service_1.authRefreshTokenGenrateService)(convert_token_ts === null || convert_token_ts === void 0 ? void 0 : convert_token_ts._id, refresh_token);
+        res.status(200).json({
+            message: "Token Update ",
+            token: new_token,
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
 exports.default = {
     authRegister: exports.authRegister,
     authLogin,
     authLogout,
+    authRefreshToken,
 };

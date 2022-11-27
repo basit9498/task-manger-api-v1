@@ -10,5 +10,5 @@ const router = (0, express_1.Router)();
 router.post("/register", user_validation_1.userValidation, auth_controller_1.default.authRegister);
 router.post("/login", user_validation_1.userValidationLogin, auth_controller_1.default.authLogin);
 router.post("/logout", user_validation_1.userValidationLogout, auth_controller_1.default.authLogout);
-// router.post("/refresh-token")
+router.patch("/refresh-token", user_validation_1.userValidationRefreshToken, auth_controller_1.default.authRefreshToken);
 exports.default = router;
