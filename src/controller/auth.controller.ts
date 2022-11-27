@@ -3,11 +3,16 @@ import getValidationReport from "../utils/handler/validation.error.handler";
 import { validationResult } from "express-validator";
 import HttpException from "../utils/handler/HttpErrorHandler";
 import {
+  authRefreshTokenGenrateService,
+  autoLogoutAuthTokenExpiredService,
   loginUserService,
   logoutAuthUpdateTokenService,
   registerUserService,
 } from "../service/auth.service";
 import LoginServiceInterface from "../utils/interface/login.service.interface";
+import { jwtVerifyRefreshToken } from "../helper/verifyToken";
+import isTokenExpired from "../helper/isTokenExpired";
+import { Jwt, JwtPayload } from "jsonwebtoken";
 
 export const authRegister = async (
   req: Request,
@@ -100,8 +105,56 @@ const authLogout = async (req: Request, res: Response, next: NextFunction) => {
     next(error);
   }
 };
+
+// Refresh Token
+
+const authRefreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // Validation
+    const error_detail = getValidationReport(validationResult(req).array());
+    if (error_detail?.length > 0) {
+      throw new HttpException(
+        400,
+        "Refrest Token Validation Error",
+        error_detail
+      );
+    }
+
+    const { refresh_token } = req.body;
+
+    const token_check: boolean = isTokenExpired(refresh_token);
+    if (token_check) {
+      // Remove this token from Data base like automayically logout
+      autoLogoutAuthTokenExpiredService(refresh_token);
+      throw new HttpException(400, "Refrest Token Expired Error", [
+        "This token has been expired please login again !",
+      ]);
+    }
+
+    const token_detail = jwtVerifyRefreshToken(refresh_token);
+    const convert_token_ts: JwtPayload = token_detail as JwtPayload;
+
+    // update new token
+    const new_token = await authRefreshTokenGenrateService(
+      convert_token_ts?._id,
+      refresh_token
+    );
+
+    res.status(200).json({
+      message: "Token Update ",
+      token: new_token,
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
 export default {
   authRegister,
   authLogin,
   authLogout,
+  authRefreshToken,
 };

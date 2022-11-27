@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { logoutAuthVerifyTokenService } from "../service/auth.service";
-import jwtVerifyToken from "../helper/verifyToken";
+import { jwtVerifyToken } from "../helper/verifyToken";
 import HttpException from "../utils/handler/HttpErrorHandler";
 
 const isAuth = async (

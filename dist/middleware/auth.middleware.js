@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const auth_service_1 = require("../service/auth.service");
-const verifyToken_1 = __importDefault(require("../helper/verifyToken"));
+const verifyToken_1 = require("../helper/verifyToken");
 const HttpErrorHandler_1 = __importDefault(require("../utils/handler/HttpErrorHandler"));
 const isAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -32,7 +32,7 @@ const isAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
         // check the token in database is user logout or not
         yield (0, auth_service_1.logoutAuthVerifyTokenService)(bearer_token);
         // Verfity the Token
-        const token_detail = (0, verifyToken_1.default)(bearer_token);
+        const token_detail = (0, verifyToken_1.jwtVerifyToken)(bearer_token);
         //
         req.user = token_detail;
         return next();
