@@ -122,10 +122,86 @@ export const logoutAuthUpdateTokenService = async (
   }
 };
 
+// Logout Verify Refresh Token Valaidation
+export const verifyRefreshTokenService = async (
+  refresh_token: string
+): Promise<Error | Boolean> => {
+  try {
+    const user_verify_token = await UserModel.findOne({
+      login_token: { $elemMatch: { "refresh_token.token": refresh_token } },
+    });
+    if (user_verify_token) {
+      return true;
+    }
+    throw new Error("Invalid Refresh Token !");
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Auto logout after refresh token as expired
+export const autoLogoutAuthTokenExpiredService = async (
+  token: string
+): Promise<Error | void> => {
+  try {
+    await UserModel.updateOne(
+      { "login_token.refresh_token.token": token },
+      {
+        $pull: { login_token: { "refresh_token.token": token } },
+      }
+    );
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const authRefreshTokenGenrateService = async (
+  user_id: string,
+  refresh_token: string
+): Promise<string | void> => {
+  try {
+    const user = await UserModel.findById(user_id);
+    if (!user) {
+      throw new Error("User Data not Found");
+    }
+
+    const token = createToken({
+      _id: user._id,
+      name: user.name,
+      user_name: user.user_name,
+      email: user.email,
+      role: user.role,
+    });
+
+    const upaet = await UserModel.updateOne(
+      { "login_token.refresh_token.token": refresh_token },
+      {
+        $set: {
+          "login_token.$[elem].log_token.token": token,
+          // "login_token.$[elem].log_token.expire_date":
+          //   "For Update",
+        },
+      },
+      {
+        arrayFilters: [{ "elem.refresh_token.token": { $eq: refresh_token } }],
+      }
+    );
+
+    console.log("upaet", upaet);
+
+    return token;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
 export default {
   checkExistEmailService,
   registerUserService,
   loginUserService,
   logoutAuthVerifyTokenService,
   logoutAuthUpdateTokenService,
+  verifyRefreshTokenService,
+  autoLogoutAuthTokenExpiredService,
+  authRefreshTokenGenrateService,
 };

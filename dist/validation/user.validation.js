@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userValidationLogout = exports.userValidationLogin = exports.userValidation = void 0;
+exports.userValidationRefreshToken = exports.userValidationLogout = exports.userValidationLogin = exports.userValidation = void 0;
 const express_validator_1 = require("express-validator");
 const auth_service_1 = require("../service/auth.service");
 const role_value = ["ADMIN", "PROJECT_MANAGER", "DEVELOPER"];
@@ -128,4 +128,31 @@ exports.userValidationLogout = (0, express_validator_1.checkSchema)({
         },
     },
 });
-exports.default = { userValidation: exports.userValidation, userValidationLogin: exports.userValidationLogin, userValidationLogout: exports.userValidationLogout };
+exports.userValidationRefreshToken = (0, express_validator_1.checkSchema)({
+    refresh_token: {
+        notEmpty: {
+            errorMessage: "Please provide refresh token !",
+            bail: true,
+        },
+        custom: {
+            options: (value) => {
+                return (0, auth_service_1.verifyRefreshTokenService)(value)
+                    .then((verify) => {
+                    if (verify) {
+                        return Promise.resolve();
+                    }
+                    return Promise.reject();
+                })
+                    .catch((error) => {
+                    return Promise.reject(error.message);
+                });
+            },
+        },
+    },
+});
+exports.default = {
+    userValidation: exports.userValidation,
+    userValidationLogin: exports.userValidationLogin,
+    userValidationLogout: exports.userValidationLogout,
+    userValidationRefreshToken: exports.userValidationRefreshToken,
+};
